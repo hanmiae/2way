@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>2WAY CINEMA · Main</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- ✅ Bootstrap CSS (헤더/드롭다운/레이아웃 필수) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- ✅ (선택) 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ✅ 공통 테마 -->
+    <link rel="stylesheet" th:href="@{/css/theme.css}">
+
+    <style>
+        /* ===== 메인 보강(3D원통 유지) ===== */
+        .home-shell{max-width:1200px;margin:0 auto;padding:0 16px 70px;}
+        .hero-card{border-radius:28px;overflow:hidden}
+        .hr-soft{border:0;border-top:1px solid rgba(255,255,255,.10);margin:16px 0}
+
+        .kpi-row{
+            display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px
+        }
+        @media (max-width: 980px){ .kpi-row{grid-template-columns:repeat(2,1fr);} }
+        .kpi{
+            border-radius:18px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(0,0,0,.18);
+            padding:12px 12px;
+            color:rgba(244,245,255,.92);
+        }
+        .kpi .k{font-size:12px;color:rgba(244,245,255,.65);font-weight:900}
+        .kpi .v{font-size:22px;font-weight:1000;letter-spacing:-.3px;margin-top:2px}
+
+
+        /* ✅ 원통(좌)을 더 넓게, 오른쪽(우)을 더 슬림하게 */
+        .hero-grid{
+  display: grid;
+  align-items: start;
+}
+.hero-grid-2{
+  grid-template-columns: minmax(520px, 720px) minmax(360px, 420px);
+  gap: 22px; /* 컬럼 사이 간격도 살짝 확대 */
+}
+
+/* ✅ 오른쪽 칼럼(빠른 시작 이하)을 한칸 오른쪽으로 “밀기” */
+.hero-right{
+  padding-left: 18px;     /* ✅ 오른쪽으로 밀리는 느낌 */
+}
+
+/* ✅ 원통 카드 자체를 더 크게 보이게: 높이/원근감 약간 업 */
+.cylinder-scene{
+  height: 500px;          /* 420 → 500 */
+  perspective: 1400px;    /* 1200 → 1400 (좀 더 깊이감) */
+}
+
+/* ✅ 반응형: 모바일에서는 다시 안전하게 */
+@media (max-width: 980px){
+  .hero-grid-2{
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .hero-right{
+    padding-left: 0;
+  }
+  .cylinder-scene{
+    height: 430px;
+  }
+}
+            .hero-left{order:2;}
+            .hero-mid{order:1;}
+            .hero-right{order:3;}
+        }
+
+        /* 트렌딩 스트립 */
+        .strip{
+            display:flex;gap:12px;overflow:auto;padding-bottom:6px;margin-top:14px;
+            scroll-snap-type:x mandatory;
+        }
+        .strip::-webkit-scrollbar{height:8px}
+        .strip::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:999px}
+        .mv{
+            flex:0 0 auto;width:170px;
+            border-radius:18px;border:1px solid rgba(255,255,255,.10);
+            background:rgba(0,0,0,.18);
+            overflow:hidden;
+            text-decoration:none;
+            color:rgba(244,245,255,.92);
+            box-shadow:0 16px 50px rgba(0,0,0,.35);
+            scroll-snap-align:start;
+        }
+        .mv .img{aspect-ratio:2/3;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .mv img{width:100%;height:100%;object-fit:cover;display:block}
+        .mv .meta{padding:10px 10px 12px}
+        .mv .t{font-weight:1000;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .mv .s{margin-top:6px;font-size:12px;color:rgba(244,245,255,.65);display:flex;justify-content:space-between;gap:8px}
+
+        /* 우측 카드 스택 */
+        .side-stack{display:grid;gap:12px}
+        .side-card{
+            border-radius:22px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(0,0,0,.18);
+            padding:14px 14px;
+            color:rgba(244,245,255,.90);
+            box-shadow:0 16px 60px rgba(0,0,0,.25);
+        }
+        .side-card h3{margin:0 0 6px;font-size:14px;font-weight:1000}
+        .side-card p{margin:0;color:rgba(244,245,255,.70);font-size:12px;line-height:1.45}
+        .mini{font-size:12px;color:rgba(244,245,255,.60);font-weight:700}
+
+        /* 하단 2섹션 */
+        .bottom-grid{
+            display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px
+        }
+        @media (max-width: 980px){ .bottom-grid{grid-template-columns:1fr;} }
+
+        .panel{
+            border-radius:24px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(0,0,0,.18);
+            overflow:hidden;
+            box-shadow:0 18px 70px rgba(0,0,0,.35);
+        }
+        .panel-hd{
+            padding:12px 14px;
+            background:rgba(0,0,0,.18);
+            border-bottom:1px solid rgba(255,255,255,.08);
+            display:flex;justify-content:space-between;align-items:center;gap:10px;
+            color:rgba(244,245,255,.92);
+            font-weight:1000;
+        }
+        .tag{
+            display:inline-flex;align-items:center;gap:6px;
+            padding:6px 10px;border-radius:999px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(0,0,0,.18);
+            color:rgba(244,245,255,.78);
+            font-weight:900;font-size:12px;
+        }
+        .panel-bd{padding:14px;color:rgba(244,245,255,.78);line-height:1.6}
+
+        /* 드롭다운이 뒤로 숨는 경우 대비 */
+        .navbar, .dropdown-menu{z-index: 3000 !important;}
+    </style>
+</head>
+
+<body>
+
+<!-- ✅ 헤더 -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="hero-wrap">
+    <div class="home-shell">
+
+        <div class="hero-card">
+
+            <div class="hero-top">
+                <div class="hero-title">
+                    <div class="pill">🎬 2WAY CINEMA · Movie + Q&A + Smart Mobility</div>
+                    <h1>Now Playing</h1>
+                    <div class="sub">등록된 영화 포스터가 3D 원통 캐러셀로 천천히 회전합니다. (마우스 올리면 일시정지)</div>
+                </div>
+
+                <div class="hero-actions">
+                    <a class="btn-neo" th:href="@{/mv_outgo}">🎟 영화 목록</a>
+                    <a class="btn-neo-outline" th:href="@{/mv_inputgo}">➕ 영화 등록(ADMIN)</a>
+                    <a class="btn-neo-outline" th:href="@{/board_all}">💬 문의 게시판</a>
+                    <a class="btn-neo-outline" th:href="@{/mobility}">🗺 오시는 길</a>
+                    <a class="btn-neo-outline" th:href="@{/mobility/fee}">💳 주차요금정산</a>
+                </div>
+            </div>
+
+            <!-- ✅ KPI 4칸 -->
+            <div class="kpi-row">
+                <div class="kpi">
+                    <div class="k">등록 영화</div>
+                    <div class="v" th:text="${totalMovies != null ? totalMovies : (#lists.size(movies) != null ? #lists.size(movies) : '—')}">—</div>
+                </div>
+                <div class="kpi">
+                    <div class="k">오늘 추천</div>
+                    <div class="v">TOP</div>
+                </div>
+                <div class="kpi">
+                    <div class="k">Smart Mobility</div>
+                    <div class="v">ON</div>
+                </div>
+                <div class="kpi">
+                    <div class="k">관리/검색</div>
+                    <div class="v">READY</div>
+                </div>
+            </div>
+            <hr class="hr-soft"/>
+
+            <!-- ✅ 2컬럼: (원통) (오른쪽 카드) -->
+            <div class="hero-grid hero-grid-2">
+
+                <!-- ✅ LEFT(=MID) : 3D CYLINDER -->
+                <div class="hero-mid">
+                    <div class="cylinder-scene">
+
+                        <div th:if="${movies == null || #lists.isEmpty(movies)}"
+                             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:2;">
+                            <div class="pill">포스터가 없습니다</div>
+                            <div class="mini">ADMIN으로 로그인 후 영화 등록을 먼저 해주세요.</div>
+                        </div>
+
+                        <div class="cylinder-center" th:if="${movies != null && !#lists.isEmpty(movies)}">
+                            <div class="cylinder" id="cylinder">
+                                <a class="cyl-item"
+                                   th:each="m, st : ${movies}"
+                                   th:href="@{/detail(number=${m.mbunho})}"
+                                   th:style="|--i:${st.index};|">
+                                    <img th:src="@{'/upload/' + ${m.mimage}}"
+                                         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22400%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23111122%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23ffffff%22 font-size=%2216%22>NO IMAGE</text></svg>';"
+                                         alt="poster"/>
+                                    <div class="cyl-cap" th:text="${m.mtitle}">Movie Title</div>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ✅ RIGHT : side cards (전부 이 안에 있어야 함) -->
+                <div class="hero-right">
+                    <div class="side-stack">
+
+                        <div class="side-card">
+                            <h3>⚡ 빠른 시작</h3>
+                            <p>상단 메뉴 없이도 바로 이동할 수 있어요.</p>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                                <a class="btn-neo-outline" th:href="@{/member_inputgo}">회원가입</a>
+                                <a class="btn-neo-outline" th:href="@{/mv_searchgo}">영화 검색</a>
+                                <a class="btn-neo-outline" th:href="@{/board_inputgo}">문의 등록</a>
+                            </div>
+                        </div>
+
+                        <div class="side-card">
+                            <h3>🧠 Smart Mobility</h3>
+                            <p>구청 → 영화관 이동정보, 공영주차장 추천, 주차장→극장 도보 경로(라인)까지 한 번에.</p>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                                <a class="btn-neo-outline" th:href="@{/mobility}">주차/오시는길+</a>
+                                <a class="btn-neo-outline" th:href="@{/mobility/fee}">주차요금정산</a>
+                            </div>
+                        </div>
+
+                        <div class="side-card">
+                            <h3>🔐 ADMIN 안내</h3>
+                            <p>ADMIN 계정은 영화 등록/수정/삭제, 회원조회/검색 기능을 사용할 수 있어요.</p>
+                            <div class="mini" style="margin-top:10px;">
+                                ※ 포스터가 안 뜨면 /upload/** 허용 및 파일 경로를 먼저 확인하세요.
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-hd">
+                                <span>🧩 다음 확장 아이디어</span>
+                                <span class="tag">팀 차별화</span>
+                            </div>
+                            <div class="panel-bd">
+                                <div style="display:grid;gap:10px">
+                                    <div>⭐ 메인에서 “혼잡시간 TOP3” 바로 노출</div>
+                                    <div>⭐ “가까운 공영주차장 TOP3” 자동 추천</div>
+                                    <div>⭐ 영화 상세에서 “오시는길+” 버튼 즉시 연동</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <section class="logo-section">
+                <div class="logo-inner">
+                    <img src="/image/logo_mbc.jpg" alt="MBC 아카데미">
+                    <img src="/image/logo_teamtwo.jpg" alt="TEAM TWO">
+                    <img src="/image/logo_straffic.jpg" alt="S Traffic">
+                </div>
+            </section>
+
+
+            <!-- ✅ footer (hero-card 안) -->
+            <!-- ===== FOOTER ===== -->
+            <div class="footer">
+                <div class="container-xxl">
+
+                    <div class="footer-inner">
+
+                        <!-- ✅ 왼쪽 : 로고 -->
+                        <div class="footer-logo">
+                            <!-- 로고 이미지 경로만 맞추면 됨 -->
+                            <img src="/image/two.png" alt="2렇게잘하조">
+                        </div>
+
+                        <!-- ✅ 오른쪽 : 정보 텍스트 -->
+                        <div class="footer-info">
+                            <div>
+                                MBC아카데미 컴퓨터교육센터 인천부평점 (21404)<br>
+                                인천 부평구 광장로 16 부평역사쇼핑몰 6층
+                            </div>
+                            <div>TEL : 0507-1355-6224</div>
+                            <div class="copyright">
+                                COPYRIGHT © 2026 twoway Co,. Ltd. ALL RIGHTS RESERVED.
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div><!-- /.hero-card -->
+    </div><!-- /.home-shell -->
+</div><!-- /.hero-wrap -->
+
+<!-- ✅ Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    (function(){
+      const cyl = document.getElementById('cylinder');
+      if(!cyl) return;
+
+      const items = cyl.querySelectorAll('.cyl-item');
+      const total = items.length || 1;
+
+      cyl.style.setProperty('--total', total);
+
+      const radius = Math.min(680, Math.max(360, 300 + total * 18));
+      cyl.style.setProperty('--radius3d', radius + 'px');
+
+      const duration = Math.min(46, Math.max(22, 18 + total * 1.0));
+      cyl.style.animationDuration = duration + 's';
+    })();
+</script>
+
+</body>
+</html>
